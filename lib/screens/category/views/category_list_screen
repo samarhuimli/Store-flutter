@@ -1,0 +1,104 @@
+import 'package:flutter/material.dart';
+import 'category_service.dart';
+import 'category_form.dart';
+
+class CategoryListScreen extends StatefulWidget {
+  const CategoryListScreen({Key? key}) : super(key: key);
+
+  @override
+  State<CategoryListScreen> createState() => _CategoryListScreenState();
+}
+
+class _CategoryListScreenState extends State<CategoryListScreen> {
+  late Future<List<Map<String, dynamic>>> _categoriesFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCategories();
+  }
+
+  void _loadCategories() {
+    _categoriesFuture = CategoryService.fetchCategories();
+  }
+
+  void _showForm({String? id, String? name, String? description}) {
+    showDialog(
+      context: context,
+      builder: (_) => CategoryForm(
+        id: id,
+        initialName: name,
+        initialDescription: description,
+        onSubmit: (newName, newDesc) async {
+          if (id == null) {
+            await CategoryService.addCategory({'name': newName, 'description': newDesc});
+          } else {
+            await CategoryService.updateCategory(id, {'name': newName, 'description': newDesc});
+          }
+          setState(_loadCategories);
+        },
+      ),
+    );
+  }
+
+  void _deleteCategory(String id) async {
+    await CategoryService.deleteCategory(id);
+    setState(_loadCategories);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Catégories'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () => _showForm(),
+          ),
+        ],
+      ),
+      body: FutureBuilder<List<Map<String, dynamic>>>(
+        future: _categoriesFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Erreur: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text('Aucune catégorie trouvée'));
+          } else {
+            final categories = snapshot.data!;
+            return ListView.builder(
+              itemCount: categories.length,
+              itemBuilder: (context, index) {
+                final cat = categories[index];
+                return ListTile(
+                  title: Text(cat['name']),
+                  subtitle: Text(cat['description'] ?? ''),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit),
+                        onPressed: () => _showForm(
+                          id: cat['_id'],
+                          name: cat['name'],
+                          description: cat['description'],
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () => _deleteCategory(cat['_id']),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          }
+        },
+      ),
+    );
+  }
+}

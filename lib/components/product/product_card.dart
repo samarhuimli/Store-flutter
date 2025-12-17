@@ -12,12 +12,14 @@ class ProductCard extends StatelessWidget {
     required this.price,
     this.priceAfetDiscount,
     this.dicountpercent,
+    this.trailing,
     required this.press,
   });
   final String image, brandName, title;
   final double price;
   final double? priceAfetDiscount;
   final int? dicountpercent;
+  final Widget? trailing;
   final VoidCallback press;
 
   @override
@@ -75,14 +77,25 @@ class ProductCard extends StatelessWidget {
                         .copyWith(fontSize: 10),
                   ),
                   const SizedBox(height: defaultPadding / 2),
-                  Text(
-                    title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleSmall!
-                        .copyWith(fontSize: 12),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleSmall!
+                              .copyWith(fontSize: 12),
+                        ),
+                      ),
+                      if (trailing != null) ...[
+                        const SizedBox(width: 4),
+                        trailing!,
+                      ],
+                    ],
                   ),
                   const Spacer(),
                   priceAfetDiscount != null

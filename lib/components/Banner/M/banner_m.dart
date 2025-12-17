@@ -22,7 +22,8 @@ class BannerM extends StatelessWidget {
         child: Stack(
           children: [
             NetworkImageWithLoader(image, radius: 0),
-            Container(color: Colors.black45),
+            // Lgrement plus sombre pour que le texte soit mieux lisible
+            Container(color: Colors.black54),
             ...children,
           ],
         ),

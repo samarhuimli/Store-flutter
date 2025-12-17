@@ -1,8 +1,11 @@
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:provider/provider.dart';
 import 'package:shop/constants.dart';
+import 'package:shop/providers/cart_provider.dart';
 import 'package:shop/route/screen_export.dart';
+import 'package:shop/services/auth_service.dart';
 
 class EntryPoint extends StatefulWidget {
   const EntryPoint({super.key});
@@ -21,6 +24,18 @@ class _EntryPointState extends State<EntryPoint> {
     ProfileScreen(),
   ];
   int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _initCartFromBackend();
+  }
+
+  Future<void> _initCartFromBackend() async {
+    final userId = await AuthService.getUserId();
+    if (!mounted || userId == null) return;
+    Provider.of<CartProvider>(context, listen: false).setUser(userId);
+  }
 
   @override
   Widget build(BuildContext context) {

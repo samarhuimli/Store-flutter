@@ -14,6 +14,7 @@ class SecondaryProductCard extends StatelessWidget {
     this.dicountpercent,
     this.press,
     this.style,
+    this.trailing,
   });
   final String image, brandName, title;
   final double price;
@@ -22,6 +23,7 @@ class SecondaryProductCard extends StatelessWidget {
   final VoidCallback? press;
 
   final ButtonStyle? style;
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -79,14 +81,25 @@ class SecondaryProductCard extends StatelessWidget {
                         .copyWith(fontSize: 10),
                   ),
                   const SizedBox(height: defaultPadding / 2),
-                  Text(
-                    title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleSmall!
-                        .copyWith(fontSize: 12),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleSmall!
+                              .copyWith(fontSize: 12),
+                        ),
+                      ),
+                      if (trailing != null) ...[
+                        const SizedBox(width: 4),
+                        trailing!,
+                      ],
+                    ],
                   ),
                   const Spacer(),
                   priceAfetDiscount != null

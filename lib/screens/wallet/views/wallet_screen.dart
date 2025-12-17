@@ -1,9 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:shop/constants.dart';
-import 'package:shop/models/product_model.dart';
 
 import 'components/wallet_balance_card.dart';
 import 'components/wallet_history_card.dart';
+
+class WalletHistoryProduct {
+  final String image;
+  final String title;
+  final String brandName;
+  final double price;
+  final double? priceAfetDiscount;
+  final int? dicountpercent;
+
+  WalletHistoryProduct({
+    required this.image,
+    required this.title,
+    required this.brandName,
+    required this.price,
+    this.priceAfetDiscount,
+    this.dicountpercent,
+  });
+}
 
 class WalletScreen extends StatelessWidget {
   const WalletScreen({super.key});
@@ -46,7 +63,7 @@ class WalletScreen extends StatelessWidget {
                       date: "JUN 12, 2020",
                       amount: 129,
                       products: [
-                        ProductModel(
+                        WalletHistoryProduct(
                           image: productDemoImg1,
                           title: "Mountain Warehouse for Women",
                           brandName: "Lipsy london",
@@ -54,7 +71,7 @@ class WalletScreen extends StatelessWidget {
                           priceAfetDiscount: 420,
                           dicountpercent: 20,
                         ),
-                        ProductModel(
+                        WalletHistoryProduct(
                           image: productDemoImg4,
                           title: "Mountain Beta Warehouse",
                           brandName: "Lipsy london",

@@ -1,5 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:http/http.dart' as http;
+import 'package:shop/services/auth_service.dart';
 import 'package:shop/components/list_tile/divider_list_tile.dart';
 import 'package:shop/components/network_image_with_loader.dart';
 import 'package:shop/constants.dart';
@@ -8,20 +12,84 @@ import 'package:shop/route/screen_export.dart';
 import 'components/profile_card.dart';
 import 'components/profile_menu_item_list_tile.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
   @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  bool _loading = false;
+  String _name = '';
+  String _email = '';
+  String _avatarUrl = 'https://i.imgur.com/IXnwbLk.png';
+
+  Future<String?> _getToken() async {
+    return AuthService.getToken();
+  }
+
+  Future<void> _loadProfile() async {
+    setState(() => _loading = true);
+
+    try {
+      final token = await _getToken();
+      if (token != null) {
+        final res = await http.get(
+          Uri.parse('http://localhost:3000/users/me'),
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        );
+
+        if (res.statusCode == 200) {
+          final data = json.decode(res.body) as Map<String, dynamic>;
+          setState(() {
+            _name = (data['username'] ?? '') as String;
+            _email = (data['email'] ?? '') as String;
+          });
+        }
+        // si l'API renvoie une erreur, on garde les valeurs par défaut
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _loading = false);
+      }
+    }
+  }
+
+  Future<void> _logout() async {
+    await AuthService.logout();
+
+    if (!mounted) return;
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      logInScreenRoute,
+      (route) => false,
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (_loading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       body: ListView(
         children: [
           ProfileCard(
-            name: "Sepide",
-            email: "theflutterway@gmail.com",
-            imageSrc: "https://i.imgur.com/IXnwbLk.png",
-            // proLableText: "Sliver",
-            // isPro: true, if the user is pro
+            name: _name.isEmpty ? 'Guest' : _name,
+            email: _email.isEmpty ? 'email inconnu' : _email,
+            imageSrc: _avatarUrl,
             press: () {
               Navigator.pushNamed(context, userInfoScreenRoute);
             },
@@ -156,7 +224,7 @@ class ProfileScreen extends StatelessWidget {
 
           // Log Out
           ListTile(
-            onTap: () {},
+            onTap: _logout,
             minLeadingWidth: 24,
             leading: SvgPicture.asset(
               "assets/icons/Logout.svg",

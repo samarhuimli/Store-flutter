@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shop/route/screen_export.dart';
+import 'package:shop/services/category_service.dart';
+import 'package:shop/models/category_model.dart' as backend;
+import 'package:shop/screens/category/views/category_products_screen.dart';
 
 import '../../../../constants.dart';
 
@@ -36,31 +39,86 @@ class Categories extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          ...List.generate(
-            demoCategories.length,
-            (index) => Padding(
-              padding: EdgeInsets.only(
-                  left: index == 0 ? defaultPadding : defaultPadding / 2,
-                  right:
-                      index == demoCategories.length - 1 ? defaultPadding : 0),
-              child: CategoryBtn(
-                category: demoCategories[index].name,
-                svgSrc: demoCategories[index].svgSrc,
-                isActive: index == 0,
-                press: () {
-                  if (demoCategories[index].route != null) {
-                    Navigator.pushNamed(context, demoCategories[index].route!);
-                  }
+    return FutureBuilder<List<backend.CategoryModel>>(
+      future: CategoryService.getCategoryModels(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const SizedBox(
+            height: 40,
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                ...List.generate(
+                  demoCategories.length,
+                  (index) => Padding(
+                    padding: EdgeInsets.only(
+                        left: index == 0 ? defaultPadding : defaultPadding / 2,
+                        right: index == demoCategories.length - 1
+                            ? defaultPadding
+                            : 0),
+                    child: CategoryBtn(
+                      category: demoCategories[index].name,
+                      svgSrc: demoCategories[index].svgSrc,
+                      isActive: index == 0,
+                      press: () {
+                        if (demoCategories[index].route != null) {
+                          Navigator.pushNamed(
+                              context, demoCategories[index].route!);
+                        }
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        final categories = snapshot.data!;
+
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              ...List.generate(
+                categories.length,
+                (index) {
+                  final cat = categories[index];
+                  return Padding(
+                    padding: EdgeInsets.only(
+                      left: index == 0 ? defaultPadding : defaultPadding / 2,
+                      right: index == categories.length - 1
+                          ? defaultPadding
+                          : 0,
+                    ),
+                    child: CategoryBtn(
+                      category: cat.name,
+                      svgSrc: null,
+                      isActive: index == 0,
+                      press: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => CategoryProductsScreen(
+                              category: cat,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  );
                 },
               ),
-            ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
