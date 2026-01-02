@@ -49,13 +49,22 @@ class AuthService {
 
       final token = data['token'];
       final userId = data['userId']?.toString();
+      final username = data['username']?.toString();
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('jwt_token', token);
       if (userId != null) {
         await prefs.setString('user_id', userId);
       }
+      if (username != null) {
+        await prefs.setString('username', username);
+      }
 
-      return {'success': true, 'token': token, 'userId': userId};
+      return {
+        'success': true,
+        'token': token,
+        'userId': userId,
+        'username': username,
+      };
     } else {
       final error = jsonDecode(response.body);
       return {'success': false, 'message': error['message'] ?? 'Email ou mot de passe incorrect'};
@@ -71,6 +80,7 @@ class AuthService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('jwt_token');
     await prefs.remove('user_id');
+    await prefs.remove('username');
   }
 
   static Future<bool> isLoggedIn() async {
@@ -81,5 +91,15 @@ class AuthService {
   static Future<String?> getUserId() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('user_id');
+  }
+
+  static Future<String?> getUsername() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('username');
+  }
+
+  static Future<void> setUsername(String username) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('username', username);
   }
 }

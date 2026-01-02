@@ -41,6 +41,8 @@ class _OffersCarouselState extends State<OffersCarousel> {
         },
       ),
       BannerMStyle2(
+        // 2ᵉ slide : image locale, à partir de l’URL Pinterest que tu as donnée
+        image: 'assets/images/carousel_2.jpg',
         title: "Black \nfriday",
         subtitle: "Collection",
         discountParcent: 50,
@@ -49,6 +51,8 @@ class _OffersCarouselState extends State<OffersCarousel> {
         },
       ),
       BannerMStyle3(
+        // 3ᵉ slide : image locale, à partir de l’URL pinimg que tu as donnée
+        image: 'assets/images/carousel_3.jpg',
         title: "Grab \nyours now",
         discountParcent: 50,
         press: () {

@@ -5,6 +5,7 @@ import 'package:shop/components/product/product_card.dart';
 import 'package:shop/models/product_model.dart';
 import 'package:shop/providers/cart_provider.dart';
 import 'package:shop/services/product_service.dart';
+import 'package:shop/route/route_constants.dart';
 
 class PopularProducts extends StatelessWidget {
   const PopularProducts({super.key});
@@ -60,8 +61,10 @@ class PopularProducts extends StatelessWidget {
                         },
                       ),
                       press: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(p.name)),
+                        Navigator.pushNamed(
+                          context,
+                          productDetailsScreenRoute,
+                          arguments: p,
                         );
                       },
                     ),

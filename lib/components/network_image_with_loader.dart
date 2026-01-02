@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
@@ -20,6 +22,7 @@ class NetworkImageWithLoader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isNetwork = src.startsWith('http');
+    final isDataUri = src.startsWith('data:image');
 
     return ClipRRect(
       borderRadius: BorderRadius.all(Radius.circular(radius)),
@@ -38,10 +41,33 @@ class NetworkImageWithLoader extends StatelessWidget {
               placeholder: (context, url) => const Skeleton(),
               errorWidget: (context, url, error) => const Icon(Icons.error),
             )
-          : Image.asset(
-              src,
-              fit: fit,
-            ),
+          : isDataUri
+              ? _buildFromDataUri()
+              : Container(
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage(src),
+                      fit: fit,
+                    ),
+                  ),
+                ),
     );
+  }
+
+  Widget _buildFromDataUri() {
+    try {
+      final parts = src.split(',');
+      if (parts.length != 2) {
+        return const Icon(Icons.error);
+      }
+      final base64Str = parts[1];
+      final bytes = base64Decode(base64Str);
+      return Image.memory(
+        bytes,
+        fit: fit,
+      );
+    } catch (_) {
+      return const Icon(Icons.error);
+    }
   }
 }

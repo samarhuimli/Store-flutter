@@ -96,17 +96,38 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
 
+              const SizedBox(height: defaultPadding / 2),
+              Center(
+                child: Column(
+                  children: [
+                    const Text("Vous avez oublié votre mot de passe ?"),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, passwordRecoveryScreenRoute);
+                      },
+                      child: const Text("Récupérer mot de passe"),
+                    ),
+                  ],
+                ),
+              ),
+
               SizedBox(height: size.height > 700 ? size.height * 0.1 : defaultPadding),
 
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text("Don't have an account? "),
-                  TextButton(
-                    onPressed: () {},
-                    child: const Text("Sign up"),
-                  ),
-                ],
+              Center(
+                child: Wrap(
+                  alignment: WrapAlignment.center,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 4,
+                  children: [
+                    const Text("Don't have an account?"),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, signUpScreenRoute);
+                      },
+                      child: const Text("Sign up"),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

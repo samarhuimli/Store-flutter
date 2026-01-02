@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:shop/components/buy_full_ui_kit.dart';
 import 'package:shop/components/cart_button.dart';
 import 'package:shop/components/custom_modal_bottom_sheet.dart';
 import 'package:shop/components/product/product_card.dart';
 import 'package:shop/constants.dart';
-import 'package:shop/screens/product/views/product_returns_screen.dart';
+import 'package:shop/models/product_model.dart';
+import 'package:shop/models/review_model.dart';
+import 'package:shop/services/product_service.dart';
 
 import 'package:shop/route/screen_export.dart';
 
@@ -17,21 +20,22 @@ import '../../../components/review_card.dart';
 import 'product_buy_now_screen.dart';
 
 class ProductDetailsScreen extends StatelessWidget {
-  const ProductDetailsScreen({super.key, this.isProductAvailable = true});
+  const ProductDetailsScreen({super.key, required this.product});
 
-  final bool isProductAvailable;
+  final ProductModel product;
 
   @override
   Widget build(BuildContext context) {
+    final reviewsFuture = ProductService.getReviews(product.id);
     return Scaffold(
-      bottomNavigationBar: isProductAvailable
+      bottomNavigationBar: product.stock > 0
           ? CartButton(
-              price: 140,
+              price: product.discountedPrice ?? product.price,
               press: () {
                 customModalBottomSheet(
                   context,
                   height: MediaQuery.of(context).size.height * 0.92,
-                  child: const ProductBuyNowScreen(),
+                  child: ProductBuyNowScreen(product: product),
                 );
               },
             )
@@ -56,17 +60,17 @@ class ProductDetailsScreen extends StatelessWidget {
                 ),
               ],
             ),
-            const ProductImages(
-              images: [productDemoImg1, productDemoImg2, productDemoImg3],
+            ProductImages(
+              images:
+                  product.images.isNotEmpty ? product.images : [product.firstImage],
             ),
             ProductInfo(
-              brand: "LIPSY LONDON",
-              title: "Sleeveless Ruffle",
-              isAvailable: isProductAvailable,
-              description:
-                  "A cool gray cap in soft corduroy. Watch me.' By buying cotton products from Lindex, you’re supporting more responsibly...",
-              rating: 4.4,
-              numOfReviews: 126,
+              brand: product.brand ?? "Unknown",
+              title: product.name,
+              isAvailable: product.stock > 0,
+              description: product.description ?? "",
+              rating: product.rating,
+              numOfReviews: product.reviewsCount,
             ),
             ProductListTile(
               svgSrc: "assets/icons/Product.svg",
@@ -80,43 +84,69 @@ class ProductDetailsScreen extends StatelessWidget {
                 );
               },
             ),
-            ProductListTile(
-              svgSrc: "assets/icons/Delivery.svg",
-              title: "Shipping Information",
-              press: () {
-                customModalBottomSheet(
-                  context,
-                  height: MediaQuery.of(context).size.height * 0.92,
-                  child: const BuyFullKit(
-                    images: ["assets/screens/Shipping information.png"],
-                  ),
-                );
-              },
-            ),
-            ProductListTile(
-              svgSrc: "assets/icons/Return.svg",
-              title: "Returns",
-              isShowBottomBorder: true,
-              press: () {
-                customModalBottomSheet(
-                  context,
-                  height: MediaQuery.of(context).size.height * 0.92,
-                  child: const ProductReturnsScreen(),
-                );
-              },
-            ),
-            const SliverToBoxAdapter(
+            SliverToBoxAdapter(
               child: Padding(
-                padding: EdgeInsets.all(defaultPadding),
+                padding: const EdgeInsets.all(defaultPadding),
                 child: ReviewCard(
-                  rating: 4.3,
-                  numOfReviews: 128,
-                  numOfFiveStar: 80,
-                  numOfFourStar: 30,
-                  numOfThreeStar: 5,
-                  numOfTwoStar: 4,
-                  numOfOneStar: 1,
+                  rating: product.rating,
+                  numOfReviews: product.reviewsCount,
+                  numOfFiveStar: product.reviewsCount,
+                  numOfFourStar: 0,
+                  numOfThreeStar: 0,
+                  numOfTwoStar: 0,
+                  numOfOneStar: 0,
                 ),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: FutureBuilder<List<ProductReview>>(
+                future: reviewsFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Padding(
+                      padding: EdgeInsets.all(defaultPadding),
+                      child: Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    );
+                  }
+
+                  final reviews = snapshot.data ?? [];
+                  if (reviews.isEmpty) {
+                    return const SizedBox.shrink();
+                  }
+
+                  final lastTwo = reviews.length <= 2
+                      ? reviews.reversed.toList()
+                      : reviews.reversed.take(2).toList();
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: defaultPadding,
+                      vertical: defaultPadding / 2,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Derniers avis',
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleSmall
+                              ?.copyWith(fontWeight: FontWeight.w600),
+                        ),
+                        const SizedBox(height: defaultPadding / 2),
+                        ...lastTwo.map(
+                          (r) => Padding(
+                            padding: const EdgeInsets.only(
+                                bottom: defaultPadding / 2),
+                            child: _MiniReviewTile(review: r),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
             ),
             ProductListTile(
@@ -124,7 +154,11 @@ class ProductDetailsScreen extends StatelessWidget {
               title: "Reviews",
               isShowBottomBorder: true,
               press: () {
-                Navigator.pushNamed(context, productReviewsScreenRoute);
+                Navigator.pushNamed(
+                  context,
+                  productReviewsScreenRoute,
+                  arguments: product,
+                );
               },
             ),
             SliverPadding(
@@ -139,23 +173,62 @@ class ProductDetailsScreen extends StatelessWidget {
             SliverToBoxAdapter(
               child: SizedBox(
                 height: 220,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: 5,
-                  itemBuilder: (context, index) => Padding(
-                    padding: EdgeInsets.only(
-                        left: defaultPadding,
-                        right: index == 4 ? defaultPadding : 0),
-                    child: ProductCard(
-                      image: productDemoImg2,
-                      title: "Sleeveless Tiered Dobby Swing Dress",
-                      brandName: "LIPSY LONDON",
-                      price: 24.65,
-                      priceAfetDiscount: index.isEven ? 20.99 : null,
-                      dicountpercent: index.isEven ? 25 : null,
-                      press: () {},
-                    ),
-                  ),
+                child: FutureBuilder<List<ProductModel>>(
+                  future: product.categoryId != null
+                      ? ProductService.getProductsByCategory(
+                          product.categoryId!,
+                        )
+                      : ProductService.getProducts(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }
+
+                    if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return const SizedBox.shrink();
+                    }
+
+                    final recommendations = snapshot.data!
+                        .where((p) => p.id != product.id)
+                        .toList();
+
+                    if (recommendations.isEmpty) {
+                      return const SizedBox.shrink();
+                    }
+
+                    return ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: recommendations.length,
+                      itemBuilder: (context, index) {
+                        final p = recommendations[index];
+                        return Padding(
+                          padding: EdgeInsets.only(
+                            left: defaultPadding,
+                            right: index == recommendations.length - 1
+                                ? defaultPadding
+                                : 0,
+                          ),
+                          child: ProductCard(
+                            image: p.firstImage,
+                            title: p.name,
+                            brandName: p.brand ?? "Unknown",
+                            price: p.price,
+                            priceAfetDiscount: p.discountedPrice ?? p.price,
+                            dicountpercent: p.discountPercent ?? 0,
+                            press: () {
+                              Navigator.pushNamed(
+                                context,
+                                productDetailsScreenRoute,
+                                arguments: p,
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    );
+                  },
                 ),
               ),
             ),
@@ -164,6 +237,54 @@ class ProductDetailsScreen extends StatelessWidget {
             )
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _MiniReviewTile extends StatelessWidget {
+  const _MiniReviewTile({required this.review});
+
+  final ProductReview review;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      title: Row(
+        children: [
+          Expanded(child: Text(review.userName)),
+          RatingBarIndicator(
+            rating: review.rating,
+            itemSize: 16,
+            unratedColor: Theme.of(context)
+                .textTheme
+                .bodyLarge!
+                .color!
+                .withOpacity(0.1),
+            itemBuilder: (context, _) => const Icon(
+              Icons.star,
+              color: Colors.amber,
+            ),
+          ),
+        ],
+      ),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if ((review.comment ?? '').isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(review.comment!),
+          ],
+          const SizedBox(height: 2),
+          Text(
+            review.createdAt.toLocal().toString().split(' ').first,
+            style: Theme.of(context)
+                .textTheme
+                .bodySmall
+                ?.copyWith(color: Colors.grey),
+          ),
+        ],
       ),
     );
   }

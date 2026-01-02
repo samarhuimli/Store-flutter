@@ -29,12 +29,29 @@ class _EntryPointState extends State<EntryPoint> {
   void initState() {
     super.initState();
     _initCartFromBackend();
+    _initTabFromUrl();
   }
 
   Future<void> _initCartFromBackend() async {
+    // Si on arrive via un lien de panier partagé, on laisse CartScreen
+    // reconstruire le panier à partir de l'URL, sans recharger depuis le backend.
+    final fragment = Uri.base.fragment;
+    final isSharedCartLink =
+        fragment.startsWith('/cart?') && fragment.contains('items=');
+    if (isSharedCartLink) {
+      return;
+    }
+
     final userId = await AuthService.getUserId();
     if (!mounted || userId == null) return;
     Provider.of<CartProvider>(context, listen: false).setUser(userId);
+  }
+
+  void _initTabFromUrl() {
+    final fragment = Uri.base.fragment; // partie après le # dans l'URL
+    if (fragment == '/cart' || fragment == 'cart' || fragment.startsWith('/cart?')) {
+      _currentIndex = 3; // index de l'onglet Panier dans _pages
+    }
   }
 
   @override

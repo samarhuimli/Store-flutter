@@ -47,6 +47,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           setState(() {
             _name = (data['username'] ?? '') as String;
             _email = (data['email'] ?? '') as String;
+            final avatar = (data['avatarUrl'] ?? '').toString();
+            _avatarUrl = avatar.isNotEmpty
+                ? avatar
+                : 'https://i.imgur.com/IXnwbLk.png';
           });
         }
         // si l'API renvoie une erreur, on garde les valeurs par défaut
@@ -91,22 +95,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             email: _email.isEmpty ? 'email inconnu' : _email,
             imageSrc: _avatarUrl,
             press: () {
-              Navigator.pushNamed(context, userInfoScreenRoute);
+              Navigator.pushNamed(context, userInfoScreenRoute).then((value) {
+                _loadProfile();
+              });
             },
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(
-                horizontal: defaultPadding, vertical: defaultPadding * 1.5),
-            child: GestureDetector(
-              onTap: () {},
-              child: const AspectRatio(
-                aspectRatio: 1.8,
-                child:
-                    NetworkImageWithLoader("https://i.imgur.com/dz0BBom.png"),
-              ),
-            ),
-          ),
-
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: defaultPadding),
             child: Text(

@@ -3,6 +3,7 @@ import 'package:shop/entry_point.dart';
 
 import 'screen_export.dart';
 import 'package:shop/route/route_constants.dart';
+import 'package:shop/models/product_model.dart';
 
 // 👉 Ajout ici
 import 'package:shop/screens/category/views/category_screen.dart';
@@ -32,14 +33,17 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case productDetailsScreenRoute:
       return MaterialPageRoute(
         builder: (context) {
-          bool isProductAvailable = settings.arguments as bool? ?? true;
-          return ProductDetailsScreen(isProductAvailable: isProductAvailable);
+          final product = settings.arguments as ProductModel;
+          return ProductDetailsScreen(product: product);
         },
       );
 
     case productReviewsScreenRoute:
       return MaterialPageRoute(
-        builder: (context) => const ProductReviewsScreen(),
+        builder: (context) {
+          final product = settings.arguments as ProductModel;
+          return ProductReviewsScreen(product: product);
+        },
       );
 
     case homeScreenRoute:

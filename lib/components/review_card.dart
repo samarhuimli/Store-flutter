@@ -26,6 +26,9 @@ class ReviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final double _denominator =
+        numOfReviews > 0 ? numOfReviews.toDouble() : 1.0;
+
     return Container(
       padding: const EdgeInsets.all(defaultPadding),
       width: double.infinity,
@@ -80,11 +83,11 @@ class ReviewCard extends StatelessWidget {
           Expanded(
             child: Column(
               children: [
-                RateBar(star: 5, value: numOfFiveStar / numOfReviews),
-                RateBar(star: 4, value: numOfFourStar / numOfReviews),
-                RateBar(star: 3, value: numOfThreeStar / numOfReviews),
-                RateBar(star: 2, value: numOfTwoStar / numOfReviews),
-                RateBar(star: 1, value: numOfOneStar / numOfReviews),
+                RateBar(star: 5, value: numOfFiveStar / _denominator),
+                RateBar(star: 4, value: numOfFourStar / _denominator),
+                RateBar(star: 3, value: numOfThreeStar / _denominator),
+                RateBar(star: 2, value: numOfTwoStar / _denominator),
+                RateBar(star: 1, value: numOfOneStar / _denominator),
               ],
             ),
           ),

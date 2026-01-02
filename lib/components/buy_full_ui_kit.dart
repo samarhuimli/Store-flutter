@@ -21,9 +21,9 @@ class _BuyFullKitState extends State<BuyFullKit> {
   final Uri _url = Uri.parse(
       'https://app.gumroad.com/checkout?_gl=1*1j1owy*_ga*Nzc0MTA1NTYwLjE3MjAwMTA3MzM.*_ga_6LJN6D94N6*MTcyMDA0MjQzMC41LjEuMTcyMDA0MjQzMS4wLjAuMA..&product=uxznc&option=B3wWhE6QH46cfm31C7jEmQ%3D%3D&quantity=1&referrer=App');
   Future<void> buyLink() async {
-    if (!await launchUrl(_url)) {
-      throw Exception('Could not launch $_url');
-    }
+    try {
+      await launchUrl(_url);
+    } catch (_) {}
   }
 
   late PageController _pageController;

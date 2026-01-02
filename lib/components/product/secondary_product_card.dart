@@ -72,6 +72,7 @@ class SecondaryProductCard extends StatelessWidget {
               padding: const EdgeInsets.all(defaultPadding / 2),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
                     brandName.toUpperCase(),
@@ -80,7 +81,7 @@ class SecondaryProductCard extends StatelessWidget {
                         .bodyMedium!
                         .copyWith(fontSize: 10),
                   ),
-                  const SizedBox(height: defaultPadding / 2),
+                  const SizedBox(height: defaultPadding / 4),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -101,7 +102,7 @@ class SecondaryProductCard extends StatelessWidget {
                       ],
                     ],
                   ),
-                  const Spacer(),
+                  const SizedBox(height: defaultPadding / 4),
                   priceAfetDiscount != null
                       ? Row(
                           children: [
